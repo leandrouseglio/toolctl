@@ -1,0 +1,5 @@
+[bandit]
+exclude: tests,.venv
+skips: B404,B603,B607,B110
+# B404, B603, B607 have LOW severity. Relates to subprocess module usage, we ignore them as metamorphctl is meant to be run as a cli tool.
+# B110 has LOW severity. Relates to using pass inside an except block, which for some cases we want to do it.

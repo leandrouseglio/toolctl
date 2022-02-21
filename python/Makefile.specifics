@@ -1,0 +1,31 @@
+PEX_INTERPRETER_CONSTRAINT := ">=3.6,<4"
+PEX_PYTHON_SHEBANG := "/usr/bin/env python"
+
+_getdeps:
+	@true
+
+set-version:
+	@\
+		BUILD=$${BUILD:-'0.0.1'} ;\
+		sed -i "s/__version__.*=.*/__version__ = '$${BUILD}'/g" setup.py
+
+publish-pypi: set-version build
+	@\
+		export TWINE_USERNAME=$${PYPI_USER:-"$(__ARTIFACTORY_USER)"} ;\
+		export TWINE_PASSWORD=$${PYPI_PASSWORD:-"$(__ARTIFACTORY_PASS)"} ;\
+		export TWINE_REPOSITORY_URL=$${PYPI_REPO_URL:-"$(__ARTIFACTORY_URL)api/pypi/Investigator"} ;\
+		pipenv run twine upload dist/*
+
+develop:
+	@printf "\nInstalling $(PROJECT_NAME) in edit mode...\n\n"
+	@pip3 uninstall $(PROJECT_NAME) || true
+	@pip3 install -e ./
+	@hash -r && @pyenv rehash || true
+
+undevelop:
+	@printf "\nUninstalling $(PROJECT_NAME) in edit mode...\n\n"
+	@python3 setup.py develop --user --uninstall
+	@pip3 uninstall $(PROJECT_NAME)
+	@hash -r && @pyenv rehash || true
+
+.PHONY: _getdeps set-version publish-pypi develop undevelop

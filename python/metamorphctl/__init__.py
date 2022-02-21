@@ -1,0 +1,1 @@
+"""Implement metamorphctl main module."""

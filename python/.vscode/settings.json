@@ -1,0 +1,42 @@
+{
+    //Editor Settings
+    "editor.renderWhitespace": "all",
+    "python.formatting.provider": "yapf", // "autopep8",
+    "editor.formatOnSave": true,
+    //Python Environment Settings
+    "python.pythonPath": ".venv/bin/python3.6",
+    //"python.envFile": "${workspaceFolder}/.env",
+    //Unit Tests Settings
+    "python.testing.pytestEnabled": true,
+    //Linter Settings
+    "python.linting.enabled": true,
+    "python.linting.lintOnSave": true,
+    "python.linting.pylintEnabled": false,
+    "python.linting.pycodestyleEnabled": false,
+    "python.linting.prospectorEnabled": true,
+    "python.linting.prospectorPath": "${workspaceFolder}/.venv/bin/prospector",
+    "python.linting.prospectorArgs": [
+        "--profile",
+        ".prospector.yaml"
+    ],
+    // uncomment lines to have support with vscode-coverage-gutters
+    // **NOTE** when uncommenting, you lose debug support.
+    "python.testing.pytestArgs": [
+        "metamorphctl"
+        // "--cov-report",
+        // "xml:cov.xml",
+        // "--cov",
+        // "metamorphctl"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/*.pyc": true,
+        "**/*__pycache__": true
+    }
+}

@@ -1,0 +1,40 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "metamorphctl",
+            "type": "python",
+            "request": "launch",
+            "module": "metamorphctl.__main__",
+            "args": [
+                "isolate",
+                "--pod",
+                "mysql-client-0",
+                "--namespace",
+                "sagueroeks3persistence"
+            ],
+            "console": "integratedTerminal"
+        }
+        //        {
+        //            "name": "Module",
+        //            "type": "python",
+        //            "request": "launch",
+        //            "module": "metamorphctl.__main__",
+        //            "pythonPath": "${workspaceFolder}/src/.venv/bin/python3",
+        //            "env": {
+        //                "PYTHONPATH": "${workspaceFolder}/src/"
+        //            },
+        //        },
+        //        {
+        //            "name": "Current File",
+        //            "type": "python",
+        //            "request": "launch",
+        //            "program": "${file}",
+        //            "env": {
+        //                "PYTHONPATH": "${workspaceFolder}/src/metamorphctl"
+        //            },
+        //            "pythonPath": "${workspaceFolder}/src/.venv/bin/python3"
+        //        }
+    ],
+    "compounds": []
+}

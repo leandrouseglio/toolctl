@@ -1,0 +1,49 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+"ruamel.yaml" = "==0.16.10"
+regex = "==2020.05.14"
+kubernetes = "==11.0.0"
+boto3 = "==1.13.19"
+python-etcd = "==0.4.5"
+click = "==7.1.2"
+jinja2 = "==2.11.2"
+jsonschema = "==3.2.0"
+jmespath = "==0.10.0"
+xlsxwriter = "==1.2.8"
+
+[dev-packages]
+# Security Testing
+bandit = "==1.5.1"
+safety = "==1.9.0"
+dependency-check = "==0.5.0"
+# Unit Testing
+mock = "==4.0.2"
+pytest = "==5.4.2"
+pytest-cov = "==2.9.0"
+pytest-html = "==2.1.1"
+pytest-profiling = "==1.7.0"
+pytest-xdist = "==1.32.0"
+# Linting
+"prospector[with_everything]" = "==1.2.0"
+"pep8" = "==1.7.1"
+# VSCode Integrations
+rope = "==0.17.0"
+yapf = "==0.30.0"
+# Miscellaneous
+pyroma = "==2.6"
+in-place = "==0.4.0"
+tenacity = "==6.2.0"
+# Pypi Publishing
+docutils = "==0.16"
+twine = "==3.1.1"
+# Debugging
+ipdb = "==0.13.2"
+# Python Executable
+pex = "==2.1.11"
+
+[requires]
+python_version = "3.6"

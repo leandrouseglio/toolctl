@@ -1,0 +1,372 @@
+vpc_sealing:
+  whitelist:
+  - {Egress: true, CidrBlock: "INSERT_VALID_CIDR"}
+  - {Egress: false, CidrBlock: "INSERT_VALID_CIDR"}
+  blacklist:
+  - {Egress: true, CidrBlock: "INSERT_VALID_CIDR"}
+  - {Egress: false, CidrBlock: "INSERT_VALID_CIDR"}
+inventory:
+
+  awsv2:
+  # syntax:
+  #
+  # HINT: use the aws cli to see what is the service/api names as well as the objects you should use.
+  #
+  # - service: aws service name.
+  #   api: api to call in aws service.
+  #   objects: object name from the result to traverse.
+  #   title: title to use in the reports (do not use whitespaces).
+  #   fields: comma separated list of jmespath items (http://jmespath.org/) to use for the report.
+  #   report: true|false do not add to the report. Defaults to true if not present.
+  #   paginator_support: true|false if the AWS api supports paginator. Defaults to true if not present.
+  #   params: optional parameters to pass to the api call.
+  #
+
+
+  - service: ec2
+    api: describe_vpcs
+    objects: "Vpcs"
+    title: VPC
+    fields: ["VpcId", {"Name": "Tags[?Key=='Name'] | [0].Value"}, "CidrBlock"]
+
+  - service: ec2
+    api: describe_vpc_peering_connections
+    objects: "VpcPeeringConnections"
+    title: VPC_Peer
+    fields: ["VpcPeeringConnectionId", {"Name": "Tags[?Key=='Name'] | [0].Value"}, "RequesterVpcInfo.VpcId", "AccepterVpcInfo.VpcId"]
+
+  - service: ec2
+    api: describe_vpc_endpoints
+    objects: "VpcEndpoints"
+    title: EC2_Endpoints
+    fields: [{"Name": "Tags[?Key=='Name'] | [0].Value"}, "VpcEndpointType", "VpcId"]
+
+  - service: ec2
+    api: describe_subnets
+    objects: "Subnets"
+    title: Subnets
+    fields: ["SubnetId", {"Name": "Tags[?Key=='Name'] | [0].Value"}, "CidrBlock"]
+
+  - service: ec2
+    api: describe_instances
+    objects: "Reservations[].Instances"
+    title: EC2_Instances
+    fields: ["InstanceId", {"Name": "Tags[?Key=='Name'] | [0].Value"}, "InstanceType", "BlockDeviceMappings[].Ebs.VolumeId", "SecurityGroups", "IamInstanceProfile.Arn", {"AMI": "aws_ami(ImageId).Images[].Name"}]
+
+  - service: ec2
+    api: describe_volumes
+    objects: "Volumes"
+    title: EC2_Volumes
+    fields: ["VolumeId", "Size", "Encrypted", {"Attachment": "Attachments | [0].InstanceId"}]
+
+  - service: rds
+    api: describe_db_instances
+    objects: "DBInstances"
+    title: RDS_Instances
+    fields: ["DBInstanceIdentifier", "DBName", "DBInstanceClass", "Engine", "EngineVersion", {"SecurityGroups": "VpcSecurityGroups[].VpcSecurityGroupId"}, "StorageType", "StorageEncrypted", "MultiAZ"]
+
+  - service: autoscaling
+    api: describe_auto_scaling_groups
+    objects: "AutoScalingGroups"
+    title: EC2_Autoscaling_Groups
+    fields: [{"Name": "Tags[?Key=='Name'] | [0].Value"}, "LaunchConfigurationName", "AvailabilityZones[]"]
+
+  - service: elb
+    api: describe_load_balancers
+    objects: "LoadBalancerDescriptions"
+    title: ELB
+    fields: ["LoadBalancerName", "Scheme", "SecurityGroups", {"Listeners": "ListenerDescriptions[][Listener.Protocol, Listener.LoadBalancerPort]"}, {"Tags": "aws_elb_tags(LoadBalancerName).TagDescriptions"}]
+
+  - service: elbv2
+    api: describe_load_balancers
+    objects: "LoadBalancers"
+    title: ALB
+    fields: ["LoadBalancerName", "Scheme", "Type", "SecurityGroups", {"Listeners": "aws_elbv2_listeners(LoadBalancerArn).Listeners[][Protocol, Port]"}, {"Tags": "aws_elbv2_tags(LoadBalancerArn).TagDescriptions[].Tags"}]
+
+  - service: s3
+    api: list_buckets
+    objects: "Buckets"
+    paginator_support: false
+    title: S3_Buckets
+    fields: ["Name", {"Location": "aws_s3_location(Name).LocationConstraint"}, {"Lifecycle": "aws_s3_lifecycle(Name).Rules"}, {"Versioning": "aws_s3_versioning(Name).Status"}, {"Encryption": "aws_s3_encryption(Name).ServerSideEncryptionConfiguration"}, {"PublicAccessBlock": "aws_s3_public_access_block(Name).PublicAccessBlockConfiguration"}, {"ACL": "aws_s3_acl(Name).Grants"}]
+
+  - service: elasticache
+    api: describe_cache_clusters
+    objects: "CacheClusters"
+    title: ElastiCache
+    fields: ["CacheClusterId", "CacheNodeType", "Engine", "EngineVersion", {"SecurityGroups": "SecurityGroups[].SecurityGroupId"}, "PreferredAvailabilityZone", "TransitEncryptionEnabled", "AtRestEncryptionEnabled"]
+
+  - service: efs
+    api: describe_file_systems
+    objects: "FileSystems"
+    title: EFS
+    fields: ["Name", "PerformanceMode", "ThroughputMode", "Encrypted"]
+
+
+  - service: ec2
+    api: describe_security_groups
+    objects: "SecurityGroups"
+    title: SecurityGroups
+    fields: ["GroupId", "GroupName", {"Name": "Tags[?Key=='Name'] | [0].Value"}, "IpPermissions", "Description"]
+
+  - service: iam
+    api: list_roles
+    objects: "Roles"
+    title: IAM_Roles
+    fields: ["RoleName", {"AttachedPolicies": "aws_attached_policy(RoleName).AttachedPolicies[].PolicyName"}]
+
+  - service: iam
+    api: list_policies
+    objects: "Policies"
+    params: { "OnlyAttached": True }
+    title: IAM_Policies
+    fields: ["PolicyName", {"Policy": "aws_policy_document([Arn, DefaultVersionId]).PolicyVersion.Document.Statement"}]
+
+  - service: ecr
+    api: describe_repositories
+    objects: "repositories"
+    title: ECR
+    fields: ["repositoryName", "repositoryUri", "imageTagMutability", {"Images": "aws_ecr_images(repositoryName).imageIds"}]
+
+  - service: acm
+    api: list_certificates
+    objects: "CertificateSummaryList"
+    title: ACM
+    fields: ["CertificateArn", "DomainName"]
+
+  - service: route53
+    api: list_hosted_zones
+    objects: "HostedZones"
+    title: Route53
+    report: false
+    fields: ["Id", "Name", {"PrivateZone": "Config.PrivateZone"}]
+
+  - service: eks
+    api: list_clusters
+    objects: "clusters"
+    title: EKS
+    report: false
+    fields: [{"Name": "@"}, {"Version": "aws_eks_cluster(@).cluster.version"}, {"ClusterInformation": "aws_eks_cluster(@).cluster"}]
+
+  - service: resourcegroupstaggingapi
+    api: get_resources
+    objects: "ResourceTagMappingList"
+    title: ResourceGroups
+    report: false
+
+  kubernetes:
+  # syntax:
+  #
+  # - api: api to call in kubernetes.
+  #   title: title to use in the reports (do not use whitespaces).
+  #   fields: comma separated list of jmespath items (http://jmespath.org/) to use for the report.
+  #   report: true|false do not add to the report. Defaults to true if not present.
+  #
+  - api: list_deployment_for_all_namespaces
+    title: Deployments
+    fields: ["metadata.namespace", "metadata.name", "spec.replicas", {"ServiceAccount": "spec.template.spec.serviceAccount"}, {"SecurityContext": "spec.template.spec.securityContext"}, {"Image": "spec.template.spec.containers[].image"}]
+
+  - api: list_stateful_set_for_all_namespaces
+    title: StatefulSets
+    fields: ["metadata.namespace", "metadata.name", "spec.replicas", {"ServiceAccount": "spec.template.spec.serviceAccount"}, {"SecurityContext": "spec.template.spec.securityContext"}, {"Image": "spec.template.spec.containers[].image"}]
+
+  - api: list_replication_controller_for_all_namespaces
+    title: ReplicationControllers
+    fields: ["metadata.namespace", "metadata.name", "spec.replicas", {"ServiceAccount": "spec.template.spec.serviceAccount"}, {"SecurityContext": "spec.template.spec.securityContext"}, {"Image": "spec.template.spec.containers[].image"}]
+
+  - api: list_daemon_set_for_all_namespaces
+    title: DaemonSets
+    fields: ["metadata.namespace", "metadata.name", {"ServiceAccount": "spec.template.spec.serviceAccount"}, {"SecurityContext": "spec.template.spec.securityContext"}, {"Image": "spec.template.spec.containers[].image"}]
+
+  - api: list_node
+    title: Nodes
+    fields: ["metadata.name", "status.nodeInfo", {"Volumes": "status.volumesAttached[].name"}]
+
+  - api: list_persistent_volume
+    title: PersistenceVolumes
+    fields: ["metadata.name", {"Class": "spec.storageClassName"}, {"Storage": "spec.capacity.storage"}, {"AccessMode": "spec.accessModes"}, {"Claim": "spec.claimRef.name"}]
+
+  - api: list_service_for_all_namespaces
+    title: Services
+    fields: ["metadata.namespace", "metadata.name", "spec"]
+
+  - api: list_ingress_for_all_namespaces
+    title: Ingress
+    fields: ["metadata.namespace", "metadata.name", {"Class": "metadata.annotations.\"kubernetes.io/ingress.class\""}, "spec.rules", "metadata.annotations"]
+
+  - api: list_network_policy_for_all_namespaces
+    title: NetworkPolicies
+    fields: ["metadata.namespace", "metadata.name", "spec.ingress", "spec.egress", "spec.podSelector"]
+
+  - api: list_service_account_for_all_namespaces
+    title: ServiceAccounts
+    fields: ["metadata.namespace", "metadata.name", {"EksRoleArn": "metadata.annotations.\"eks.amazonaws.com/role-arn\""}]
+
+  - api: list_role_for_all_namespaces
+    title: Roles
+    fields: ["metadata.namespace", "metadata.name", "rules"]
+
+  - api: list_cluster_role
+    title: ClusterRoles
+    fields: ["metadata.name", "rules"]
+
+  - api: list_api_service
+    title: api_service
+    report: false
+
+  - api: list_audit_sink
+    title: audit_sink
+    report: false
+
+  - api: list_certificate_signing_request
+    title: certificate_signing_request
+    report: false
+
+  - api: list_cluster_role_binding
+    title: cluster_role_binding
+    report: false
+
+  - api: list_component_status
+    title: component_status
+    report: false
+
+  - api: list_csi_driver
+    title: csi_driver
+    report: false
+
+  - api: list_csi_node
+    title: csi_node
+    report: false
+
+  - api: list_custom_resource_definition
+    title: custom_resource_definition
+    report: false
+
+  - api: list_cluster_custom_object
+    title: cluster_custom_object
+    report: false
+
+  - api: list_mutating_webhook_configuration
+    title: mutating_webhook_configuration
+    report: false
+
+  - api: list_namespace
+    title: namespace
+    report: false
+
+  - api: list_pod_security_policy
+    title: pod_security_policy
+    report: false
+
+  - api: list_priority_class
+    title: priority_class
+    report: false
+
+  - api: list_runtime_class
+    title: runtime_class
+    report: false
+
+  - api: list_storage_class
+    title: storage_class
+    report: false
+
+  - api: list_validating_webhook_configuration
+    title: validating_webhook_configuration
+    report: false
+
+  - api: list_volume_attachment
+    title: volume_attachment
+    report: false
+
+  - api: list_config_map_for_all_namespaces
+    title: config_map_for_all_namespaces
+    report: false
+
+  - api: list_controller_revision_for_all_namespaces
+    title: controller_revision_for_all_namespaces
+    report: false
+
+  - api: list_cron_job_for_all_namespaces
+    title: cron_job_for_all_namespaces
+    report: false
+
+  - api: list_endpoints_for_all_namespaces
+    title: endpoints_for_all_namespaces
+    report: false
+
+  - api: list_event_for_all_namespaces
+    title: event_for_all_namespaces
+    report: false
+
+  - api: list_horizontal_pod_autoscaler_for_all_namespaces
+    title: horizontal_pod_autoscaler_for_all_namespaces
+    report: false
+
+  - api: list_job_for_all_namespaces
+    title: job_for_all_namespaces
+    report: false
+
+  - api: list_lease_for_all_namespaces
+    title: lease_for_all_namespaces
+    report: false
+
+  - api: list_limit_range_for_all_namespaces
+    title: limit_range_for_all_namespaces
+    report: false
+
+  - api: list_persistent_volume_claim_for_all_namespaces
+    title: persistent_volume_claim_for_all_namespaces
+    report: false
+
+  - api: list_pod_disruption_budget_for_all_namespaces
+    title: pod_disruption_budget_for_all_namespaces
+    report: false
+
+  - api: list_pod_for_all_namespaces
+    title: pod_for_all_namespaces
+    report: false
+
+  - api: list_pod_preset_for_all_namespaces
+    title: pod_preset_for_all_namespaces
+    report: false
+
+  - api: list_pod_template_for_all_namespaces
+    title: pod_template_for_all_namespaces
+    report: false
+
+  - api: list_replica_set_for_all_namespaces
+    title: replica_set_for_all_namespaces
+    report: false
+
+  - api: list_resource_quota_for_all_namespaces
+    title: resource_quota_for_all_namespaces
+    report: false
+
+  - api: list_role_binding_for_all_namespaces
+    title: role_binding_for_all_namespaces
+    report: false
+
+  - api: list_secret_for_all_namespaces
+    title: secret_for_all_namespaces
+    report: false
+
+  - api: list_pod_metrics
+    title: pod_metrics
+    report: false
+
+  - api: list_node_metrics
+    title: node_metrics
+    report: false
+
+  aws:
+  # Old aws implementation. Kept because it supports filtering by tag.
+  - ResourceTagMappingList
+  - Iam
+  - Route53
+  - Asg
+  - Ecr
+  - Eks
+
+  etcd:
+  - key
+  - value

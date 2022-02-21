@@ -1,0 +1,41 @@
+output-format: grouped  # pylint
+
+strictness: veryhigh
+doc-warnings: true
+test-warnings: true
+max-line-length: 100
+
+frosted:
+  run: false
+
+pyroma:
+  run: true
+  disable:
+    - PYR15
+    - PYRUNKNOWN
+
+
+pylint:
+  disable:
+     - too-few-public-methods
+     - too-many-return-statements
+     - too-many-arguments
+     - too-many-locals
+
+pep8:
+  full: true
+  disable:
+    # - E126
+
+pep257:
+  disable:
+    - D203
+    - D213
+    - D202
+
+#ignore-paths:
+#  - tests/
+
+# uses:
+#   - flask
+#   - celery
