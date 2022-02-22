@@ -1,0 +1,102 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Distribution / packaging
+packageBuild/
+*.seed
+.Python
+build/
+dist/
+.dist/
+#lib/
+lib64/
+parts/
+sdist/
+var/
+downloads/
+develop-eggs/
+eggs/
+.eggs/
+*.egg-info/
+*.egg
+.installed.cfg
+deps/
+.pytest_cache
+.venv/
+
+# Flask
+instance/
+.webassets-cache
+
+# celery beat schedule file
+celerybeat-schedule
+
+# Testing
+htmlcov/
+prof/
+artifacts/
+.coverage
+.coverage.*
+cov.xml
+.cache/
+.tox/
+.kernel
+.install
+output/
+
+# Files #
+*.class
+*.log
+.idea/
+*.idea
+.DS_Store
+logs/
+*.orig
+
+# Package Files #
+#*.tar.gz
+*.jar
+*.war
+*.ear
+*.classpath
+*.project
+*.iml
+*.ipr
+*.iws
+*.zip
+*~
+
+# Secrets
+*.crt
+*.key
+*.pem
+
+# Makefile system
+.vars.local
+.vars.environment
+node_modules/
+.ropeproject
+
+# Metamorph stuff #
+.composer_*
+docker_registry.debug.*
+deploy-outputs/
+dist/
+environment
+*.tfstate
+*.tfstate.backup
+*.new
+.package
+certs/
+kernel.bind.*.*.cfg
+environment.cfg
+pipeline/
+tmp/
+.shellinit
+
+# MPM files #
+.ci/sync-services.yaml
+.ci/sync-repositories.yaml
+
+testing/
